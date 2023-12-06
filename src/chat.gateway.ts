@@ -2,7 +2,6 @@ import {
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -10,22 +9,22 @@ import {
 import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway(80, { transports: ['websocket'] })
-export class ChatGateway
-  implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit
-{
+export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  afterInit(server: Server) {
-    console.count('Init');
-  }
-
   handleDisconnect(client: Socket) {
-    console.log('연결 끊김');
+    console.log('연결 끊김', client.id);
+    this.server.emit('disconnection', {
+      message: `${client.id}님이 퇴장하셨습니다.`,
+    });
   }
 
   handleConnection(client: Socket) {
-    console.log('연결 완료');
+    console.log('연결 완료', client.id);
+    this.server.emit('connection', {
+      message: `${client.id}님이 입장하셨습니다.`,
+    });
   }
 
   @SubscribeMessage('hello')
